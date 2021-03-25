@@ -23,15 +23,14 @@ func setRouter(app *iris.Application) {
 			float64(b)/float64(div), "kMGTPE"[exp])
 	})
 	app.RegisterView(view)
-
+	app.Use(cors)
 	// Serve assets (e.g. javascript, css).
 	// app.HandleDir("/public", iris.Dir("./public"))
-
 	app.Get("/", index)
 	app.Get("/upload", uploadView)
 	app.Post("/upload", upload)
 	app.PartyFunc("/admin", func(basic iris.Party) {
-		app.Get("/status", GetAdminStatus)
+		basic.Get("/status", GetAdminStatus)
 	})
 	filesRouter := app.Party("/files")
 	filesRouter.HandleDir("/", iris.Dir(config.UploadDir), iris.DirOptions{
@@ -63,4 +62,16 @@ func setRouter(app *iris.Application) {
 }
 func index(ctx iris.Context) {
 	ctx.Redirect("/upload")
+}
+
+func cors(ctx iris.Context) {
+	ctx.Header("Access-Control-Allow-Origin", "*")
+	ctx.Header("Access-Control-Allow-Credentials", "true")
+	if ctx.Request().Method == "OPTIONS" {
+		ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
+		ctx.Header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization")
+		ctx.StatusCode(204)
+		return
+	}
+	ctx.Next()
 }

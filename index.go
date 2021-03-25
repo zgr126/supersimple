@@ -62,6 +62,8 @@ func run() {
 
 // test file or dir limit
 func testChmod() error {
+	// mask := syscall.Umask(0)
+	// defer syscall.Umask(mask)
 	var err error
 	err = os.Mkdir(config.UploadDir, 0700)
 	if os.IsNotExist(err) {

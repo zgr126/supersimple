@@ -15,7 +15,7 @@ export default {
     methods:{
     },
     mounted(){
-        this.axios.get('state').then(e=>{
+        this.axios.get('status').then(e=>{
             console.log(e)
         })
     },

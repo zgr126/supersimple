@@ -1,7 +1,7 @@
 # supersimple
 
 
-![logo](./views/logo.png)
+![logo](./views/logo_s.png)
 
 super simple to run server for mini project
 

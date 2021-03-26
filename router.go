@@ -1,11 +1,20 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/basicauth"
 )
+
+type ResponseBean struct {
+	Code int         `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data"`
+}
 
 func setRouter(app *iris.Application) {
 	view := iris.HTML("./views", ".html")
@@ -65,7 +74,8 @@ func index(ctx iris.Context) {
 }
 
 func cors(ctx iris.Context) {
-	ctx.Header("Access-Control-Allow-Origin", "*")
+	var Origin = ctx.Request().Header["Origin"]
+	ctx.Header("Access-Control-Allow-Origin", strings.Join(Origin, ""))
 	ctx.Header("Access-Control-Allow-Credentials", "true")
 	if ctx.Request().Method == "OPTIONS" {
 		ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
@@ -74,4 +84,38 @@ func cors(ctx iris.Context) {
 		return
 	}
 	ctx.Next()
+}
+
+// common error response
+func errorHandleJSON(ctx iris.Context, err error, code errorCode) {
+	var _json = &ResponseBean{
+		Code: int(code),
+		Msg:  err.Error(),
+	}
+	var _byte, _ = json.Marshal(_json)
+	ctx.Binary(_byte)
+}
+
+// basic response null data
+func basicJSON(ctx iris.Context) {
+	var _json = &ResponseBean{
+		Code: 200,
+	}
+	var _byte, _ = json.Marshal(_json)
+	ctx.Binary(_byte)
+}
+
+// basic response
+func commonResponseJSON(ctx iris.Context, i interface{}) {
+	var _json = &ResponseBean{
+		Code: 200,
+		Data: i,
+		Msg:  "",
+	}
+	_byte, err := json.Marshal(_json)
+	if err != nil {
+		errorHandleJSON(ctx, errors.New("some error, please retry"), jsonParseErr)
+	} else {
+		ctx.Binary(_byte)
+	}
 }

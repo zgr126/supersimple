@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/boltdb/bolt"
 	"github.com/kataras/iris/v12"
+	bolt "go.etcd.io/bbolt"
 )
 
 const (
@@ -29,8 +29,9 @@ var (
 		UploadDir:            "./uploads",
 	}
 	config = defaultConfig
-	DB     *bolt.DB
-	App    *iris.Application
+	db     *bolt.DB
+	// DB  *badger.DB
+	App *iris.Application
 )
 
 func run() {
@@ -52,7 +53,7 @@ func run() {
 		log.Print("cannot connect db!")
 		return
 	}
-	defer DB.Close()
+	defer db.Close()
 
 	// run App
 	App = iris.New()
@@ -95,10 +96,11 @@ func readConfigFile() error {
 
 func connectDB() error {
 	var err error
-	DB, err = bolt.Open("chaojijian.db", 0700, nil)
+	// DB, err = badger.Open(badger.DefaultOptions("./db"))
+	db, err = bolt.Open("supersimple.db", 0700, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// defer DB.Close()
+	// defer db.Close()
 	return err
 }

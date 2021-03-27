@@ -1,11 +1,11 @@
 <template>
   <div class="contentpage">
-      <!-- <loadzip></loadzip> -->
+      <top></top>
   </div>
 </template>
 
 <script>
-
+import top from './top'
 export default {
     data(){
         return{
@@ -15,12 +15,12 @@ export default {
     methods:{
     },
     mounted(){
-        this.axios.get('status').then(e=>{
-            console.log(e)
-        })
+    },
+    beforeCreadted(){
+        
     },
     components:{
-        
+        top
         // bk
     }
 }

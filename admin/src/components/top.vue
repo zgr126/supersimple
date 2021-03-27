@@ -1,9 +1,7 @@
 <template>
   <div>
       <div class="top">
-        <div class="t_l">
-          <img src="../assets/logo.png">
-        </div>
+        
         <div class="t_m">
           <div v-for="(i, index) of top" :key="index" @click="changeRoute(i)" :class="{active: nowSelect == i.name}">
             <p class="p2">{{i.elabel}}</p>
@@ -61,32 +59,14 @@ export default {
 <style lang="stylus" scoped>
 .top
   width 100%
-  height 100px
-  max-width 800px
-  min-width 800px
   margin: auto;
+  margin-bottom 20px
   // color #fff
-  .t_l
-    height 100%
-    display inline-block
-    img 
-      height: 60px;
-      margin: 15px;
-      float left
-      // background: white;
-    span
-      display: block;
-      padding: 5px;
+  
   .t_m
-    display: inline-block;
-    height: 100px;
-    float right
-    line-height: 100px;
-    vertical-align: top;
+    display: block;
+    text-align center
     >div
-      line-height 100px
-      
-      height 100%
       display inline-block
       margin 0 5px
       &.active

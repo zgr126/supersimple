@@ -5,3 +5,18 @@ $maincolor = #3d5e80
 .mbtn
     cursor pointer
     @extend .mborder
+        
+.bounce-enter-active {
+  animation: bounce-in .5s;
+}
+.bounce-leave-active {
+  animation: bounce-in .5s reverse;
+}
+@keyframes bounce-in {
+  0% {
+    opacity 0
+  }
+  100% {
+    opacity 1
+  }
+}

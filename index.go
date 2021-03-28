@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/kataras/iris/v12"
+	"github.com/muesli/cache2go"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -31,10 +32,12 @@ var (
 	config = defaultConfig
 	db     *bolt.DB
 	// DB  *badger.DB
-	App *iris.Application
+	App   *iris.Application
+	cache *cache2go.CacheTable
 )
 
 func run() {
+
 	var err error
 	// read configFile
 	err = readConfigFile()
@@ -57,6 +60,7 @@ func run() {
 
 	// run App
 	App = iris.New()
+	newCache()
 	setRouter(App)
 	App.Listen(":" + strconv.Itoa(config.Port))
 }
@@ -101,6 +105,12 @@ func connectDB() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	newAdmin(db)
 	// defer db.Close()
 	return err
+}
+
+func newCache() {
+	cache = cache2go.Cache("supersimple")
+
 }

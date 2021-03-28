@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-button class="ok" size="mini" type="primary" @click="push">{{label}}</el-button>
+    <el-button class="ok" size="mini" type="primary" @click="commit">{{label}}</el-button>
   </div>
 </template>
 
@@ -16,21 +16,22 @@ export default {
             status: 0, //0: input 1: loading 2: success 3: failed
         }
     },
-    props: ['label', 'promise','success', 'error'],
+    props: ['label', 'promise'],
     methods:{
-        push(){
-            let _p = this.promise()
+        commit(){
+            this.$emit('click')
+        },
+        push(_p){
             // if _p not typeof promise, return error hook
             if (!isPromise(_p)){
-                this.error()
-                return 
+                return _p
             }
             this.status = 1
-            _p.then(e=>{
+            return _p.then(e=>{
+                console.log('ajaxok')
                 this.success(e)
                 this.status = 2
             }).catch(e=>{
-                this.error(e)
                 this.status = 3
             })
         },
@@ -44,4 +45,6 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+.ok
+    width 100%
 </style>

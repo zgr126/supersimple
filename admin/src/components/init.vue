@@ -8,7 +8,7 @@
         <el-form-item label="Password Again" prop="adminpassR">
           <el-input class="input_c" v-model="form.adminpassR" placeholder="password" show-password></el-input>
         </el-form-item>
-        <ajax-button label="Commit" :promise="pushAjax" :success="pushSuccess" :error="pushError"></ajax-button>
+        <ajax-button label="Commit" @click="pushAjax" ref="ajaxbtn"></ajax-button>
       </el-form>
     </el-card>
   </div>
@@ -65,20 +65,34 @@ export default {
       });
     },
     pushAjax(){
-      let p = this.axios.post('/admin/setAdminPassWord', {
-        passWord: this.form.passWord
+      // this.axios.get('password').then(e=>{
+      //   console.log(e)
+      // })
+      let p = this.axios.post('password', {
+        passWord: this.form.adminpass
+      })
+      let v = this.$refs['ajaxbtn'].push(p)
+      v.then(e=>{
+        console.log('1')
+      }).catch(e=>{
+        console.log('2')
       })
       return p
     },
+    pushHandle(_p){
+      console.log(_p)
+    },
     pushSuccess(){
+      console.log('ok')
       this.$message.success('Set Password success')
-      setTimeout(e=>{
-        this.$router.replace('/index')
-      }, 2000)
+      // setTimeout(e=>{
+      //   this.$router.replace('/index')
+      // }, 2000)
     },
     pushError(data){
-      let msg = data.msg || 'some error happend'
-      this.$message.success(msg)
+      console.log(data)
+      // let msg = data.msg || 'some error happend'
+      // this.$message.success(msg)
     }
   }
 }

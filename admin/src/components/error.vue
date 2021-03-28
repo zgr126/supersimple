@@ -1,15 +1,13 @@
 <template>
-  <div>
-    <transition name="bounce">
-      <div class="errorbox" v-show="haserror">
-        <p>
-          Net Error
-          <i class="el-icon-loading"></i>
-        </p>
-        
-      </div>
-    </transition>
-  </div>
+  <transition name="bounce">
+    <div class="errorbox" v-show="haserror">
+      <p>
+        Net Error
+        <i class="el-icon-loading"></i>
+      </p>
+      
+    </div>
+  </transition>
 </template>
 
 <script>
@@ -30,6 +28,7 @@ export default {
     display table
     background #fff
     z-index 101
+    top 0
 p    
     color: #545454;
     font-size: 20px;

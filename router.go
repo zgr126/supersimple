@@ -33,13 +33,16 @@ func setRouter(app *iris.Application) {
 	})
 	app.RegisterView(view)
 	app.Use(cors)
+	app.OnAnyErrorCode(errorHandle)
 	// Serve assets (e.g. javascript, css).
 	// app.HandleDir("/public", iris.Dir("./public"))
 	app.Get("/", index)
+	app.Any("/{name}", testRouter)
 	app.Get("/upload", uploadView)
 	app.Post("/upload", upload)
 	app.PartyFunc("/admin", func(basic iris.Party) {
-		basic.Get("/status", GetAdminStatus)
+		basic.Get("/status", getAdminStatus)
+		basic.Post("/password", setAdminPassword)
 	})
 	filesRouter := app.Party("/files")
 	filesRouter.HandleDir("/", iris.Dir(config.UploadDir), iris.DirOptions{
@@ -73,17 +76,25 @@ func index(ctx iris.Context) {
 	ctx.Redirect("/upload")
 }
 
-func cors(ctx iris.Context) {
+func setCors(ctx iris.Context) {
 	var Origin = ctx.Request().Header["Origin"]
 	ctx.Header("Access-Control-Allow-Origin", strings.Join(Origin, ""))
 	ctx.Header("Access-Control-Allow-Credentials", "true")
+}
+func cors(ctx iris.Context) {
+	setCors(ctx)
+	ctx.Next()
+}
+
+func errorHandle(ctx iris.Context) {
+	setCors(ctx)
 	if ctx.Request().Method == "OPTIONS" {
 		ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
 		ctx.Header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization")
+		ctx.Header("Access-Control-Max-Age", "2592000")
 		ctx.StatusCode(204)
 		return
 	}
-	ctx.Next()
 }
 
 // common error response

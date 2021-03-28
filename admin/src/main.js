@@ -43,10 +43,10 @@ axios.interceptors.response.use(function (response) {
   return data
   
 }, function (error) {
-  ElementUI.Message({
-    type: 'error',
-    message: error.message
-  })
+  // ElementUI.Message({
+  //   type: 'error',
+  //   message: error.message
+  // })
 })
 
 ElementUI.Dialog.props.closeOnClickModal.default = false

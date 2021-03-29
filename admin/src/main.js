@@ -40,7 +40,15 @@ axios.interceptors.response.use(function (response) {
   if (response.config.method == 'options') {
     return '1'
   }
-  return data
+  if (data && data.code === 200) {            
+    return data  
+  } else {            
+    ElementUI.Message({
+      type: 'error',
+      message: data.msg || 'some error'
+    })
+    return Promise.reject(response);        
+  }
   
 }, function (error) {
   // ElementUI.Message({

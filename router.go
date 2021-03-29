@@ -17,21 +17,7 @@ type ResponseBean struct {
 }
 
 func setRouter(app *iris.Application) {
-	view := iris.HTML("./views", ".html")
-	view.AddFunc("formatBytes", func(b int64) string {
-		const unit = 1000
-		if b < unit {
-			return fmt.Sprintf("%d B", b)
-		}
-		div, exp := int64(unit), 0
-		for n := b / unit; n >= unit; n /= unit {
-			div *= unit
-			exp++
-		}
-		return fmt.Sprintf("%.1f %cB",
-			float64(b)/float64(div), "kMGTPE"[exp])
-	})
-	app.RegisterView(view)
+
 	app.Use(cors)
 	app.OnAnyErrorCode(errorHandle)
 	// Serve assets (e.g. javascript, css).
@@ -41,44 +27,78 @@ func setRouter(app *iris.Application) {
 	app.Get("/upload", uploadView)
 	app.Post("/upload", upload)
 	app.PartyFunc("/admin", func(basic iris.Party) {
-		basic.Get("/status", getAdminStatus)
-		basic.Post("/password", setAdminPassword)
-	})
-	filesRouter := app.Party("/files")
-	filesRouter.HandleDir("/", iris.Dir(config.UploadDir), iris.DirOptions{
-		Compress: true,
-		ShowList: true,
-
-		// Optionally, force-send files to the client inside of showing to the browser.
-		Attachments: iris.Attachments{
-			Enable: true,
-			// Optionally, control data sent per second:
-			Limit: 50.0 * iris.MB,
-			Burst: 100 * iris.MB,
-			// Change the destination name through:
-			// NameFunc: func(systemName string) string {...}
-		},
-
-		DirList: iris.DirListRich(iris.DirListRichOptions{
-			// Optionally, use a custom template for listing:
-			// Tmpl: dirListRichTemplate,
-			TmplName: "dirlist.html",
-		}),
+		basic.Get("/status", getAdminStatus, auth)
+		basic.Post("/password", auth, setAdminPassword)
 	})
 
-	auth := basicauth.Default(map[string]string{
-		"myusername": "mypassword",
-	})
+	{
+		view := iris.HTML("./views", ".html")
+		view.AddFunc("formatBytes", func(b int64) string {
+			const unit = 1000
+			if b < unit {
+				return fmt.Sprintf("%d B", b)
+			}
+			div, exp := int64(unit), 0
+			for n := b / unit; n >= unit; n /= unit {
+				div *= unit
+				exp++
+			}
+			return fmt.Sprintf("%.1f %cB",
+				float64(b)/float64(div), "kMGTPE"[exp])
+		})
+		app.RegisterView(view)
+		filesRouter := app.Party("/files")
+		filesRouter.HandleDir("/", iris.Dir(config.UploadDir), iris.DirOptions{
+			Compress: true,
+			ShowList: true,
 
-	filesRouter.Delete("/{file:path}", auth, deleteFile)
+			// Optionally, force-send files to the client inside of showing to the browser.
+			Attachments: iris.Attachments{
+				Enable: true,
+				// Optionally, control data sent per second:
+				Limit: 50.0 * iris.MB,
+				Burst: 100 * iris.MB,
+				// Change the destination name through:
+				// NameFunc: func(systemName string) string {...}
+			},
+
+			DirList: iris.DirListRich(iris.DirListRichOptions{
+				// Optionally, use a custom template for listing:
+				// Tmpl: dirListRichTemplate,
+				TmplName: "dirlist.html",
+			}),
+		})
+
+		auth := basicauth.Default(map[string]string{
+			"myusername": "mypassword",
+		})
+
+		filesRouter.Delete("/{file:path}", auth, deleteFile)
+	}
 }
 func index(ctx iris.Context) {
-	ctx.Redirect("/upload")
+	// ctx.Redirect("/upload")
+}
+
+func auth(ctx iris.Context) {
+
+	session := sess.Start(ctx)
+	auth, _ := session.GetBoolean(adminAuthStr)
+
+	if !auth {
+		fmt.Print("not auth")
+		ctx.StatusCode(iris.StatusForbidden)
+		return
+	}
+	fmt.Print("auth")
+	ctx.Next()
 }
 
 func setCors(ctx iris.Context) {
 	var Origin = ctx.Request().Header["Origin"]
+	ctx.Header("Access-Control-Allow-Origin", "")
 	ctx.Header("Access-Control-Allow-Origin", strings.Join(Origin, ""))
+	ctx.Header("Access-Control-Allow-Credentials", "")
 	ctx.Header("Access-Control-Allow-Credentials", "true")
 }
 func cors(ctx iris.Context) {

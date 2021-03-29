@@ -1,8 +1,8 @@
 package main
 
 import (
-	"crypto/sha256"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -10,9 +10,8 @@ import (
 )
 
 type adminStruct struct {
-	Password   string `json: "password"`
-	CreateTime time.Time
-	BoxLst     []string
+	Password   string    `json: "password"`
+	CreateTime time.Time `json: "createTime"`
 	db         *bolt.DB
 }
 
@@ -53,9 +52,9 @@ func (ad *adminStruct) setPassword(s string) {
 }
 
 func (ad *adminStruct) getConfig() *adminStruct {
-	_c := admin
+	_c := *ad
 	_c.Password = ""
-	return _c
+	return &_c
 }
 
 func getAdminStatus(ctx iris.Context) {
@@ -64,6 +63,8 @@ func getAdminStatus(ctx iris.Context) {
 	} else {
 		commonResponseJSON(ctx, admin.getConfig())
 	}
+	ctx.Next()
+
 }
 func setAdminPassword(ctx iris.Context) {
 	if admin.Password != "" {
@@ -85,15 +86,26 @@ func setAdminPassword(ctx iris.Context) {
 				return
 			}
 			b := tx.Bucket([]byte("system"))
-			sum := sha256.Sum256([]byte("hello world\n"))
-			b.Put(adminPassword_s, sum[:])
+			p := cryptoByte(c.Password)
+			log.Print(p)
+			b.Put(adminPassword_s, []byte(p))
 			err = tx.Commit()
 			if err != nil {
 				errorHandleJSON(ctx, err, dbErr)
 				return
 			}
-			admin.Password = string(sum[:])
+			admin.Password = p
+			session := sess.Start(ctx)
+			session.Set("authenticated", true)
 			basicJSON(ctx)
 		}
 	}
+}
+
+func login(ctx iris.Context) {
+
+}
+
+func logout(ctx iris.Context) {
+
 }

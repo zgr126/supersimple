@@ -1,5 +1,6 @@
 <template>
   <div class="passbox">
+    
     <el-card shadow="hover">
       <el-form ref="form" :model="form" :rules="rules">
         <el-form-item label="Set Admin Password" prop="adminpass">
@@ -74,32 +75,16 @@ export default {
       let v = this.$refs['ajaxbtn'].push(p)
       v.then(e=>{
         console.log('1')
-      }).catch(e=>{
-        console.log('2')
       })
       return p
-    },
-    pushHandle(_p){
-      console.log(_p)
-    },
-    pushSuccess(){
-      console.log('ok')
-      this.$message.success('Set Password success')
-      // setTimeout(e=>{
-      //   this.$router.replace('/index')
-      // }, 2000)
-    },
-    pushError(data){
-      console.log(data)
-      // let msg = data.msg || 'some error happend'
-      // this.$message.success(msg)
     }
   }
 }
 </script>
 
 <style lang="stylus" scoped>
-
+.passbox
+  padding 10px
 /deep/ .el-card
   max-width 300px
   margin auto

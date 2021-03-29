@@ -1,11 +1,13 @@
 <template>
   <div id="app">
     <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
-    <div class="logo">
+    <!-- <div class="logo">
+      <img src="./assets/logo.png">
+    </div> -->
+    <welcome :show-welcome="showWelcome"></welcome>
+    <div v-show="!showWelcome" class="logo">
       <img src="./assets/logo.png">
     </div>
-    <error-page :haserror="netErr"></error-page>
-    
     <div class="mainpage">
       <router-view></router-view>
     </div>
@@ -14,31 +16,33 @@
 </template>
 
 <script>
-import errorPage from './components/error'
 
 export default {
   name: 'App',
   data(){
     return {
-      netErr: false,
+      showWelcome: false,
     }
   },
   mounted(){
-    
+    this.showWelcome = true
   },
   beforeCreate(){
-    this.axios.get('status').then(e=>{
+    let setTimeout1s = new Promise((resolve, reject)=>{
+      setTimeout(e=>{
+        resolve()
+      },1000)
+    })
+    let getAdminStatus = this.axios.get('status')
+    Promise.all([setTimeout1s,getAdminStatus]).then(_e=>{
+      this.showWelcome = false
+      let e = _e[1]
       if (e.data == null){
         this.$router.push('/init')
       }else{
         this.$router.push('/index')
       }
-    }).catch(e=>{
-      this.netErr = true
     })
-  },
-  components:{
-    errorPage, 
   }
 }
 </script>
@@ -67,7 +71,7 @@ body
 .mainpage
   // height 100%
   // width 100%
-  padding 20px
+  // padding 20px
   position relative
   overflow hidden
 * 

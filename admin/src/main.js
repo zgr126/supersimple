@@ -40,7 +40,9 @@ axios.interceptors.response.use(function (response) {
   if (response.config.method == 'options') {
     return '1'
   }
-  if (data && data.code === 200) {            
+  if (data && data.code === 100) {    
+    console.log(response.request) 
+    // if ()       
     return data  
   } else {            
     ElementUI.Message({
@@ -51,6 +53,7 @@ axios.interceptors.response.use(function (response) {
   }
   
 }, function (error) {
+  return Promise.reject(error)
   // ElementUI.Message({
   //   type: 'error',
   //   message: error.message

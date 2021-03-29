@@ -10,8 +10,8 @@ import (
 )
 
 type adminStruct struct {
-	Password   string    `json: "password"`
-	CreateTime time.Time `json: "createTime"`
+	password   string `json: ""`
+	CreateTime string `json: "createTime"`
 	db         *bolt.DB
 }
 
@@ -31,7 +31,7 @@ func newAdmin(db *bolt.DB) {
 }
 
 func (ad *adminStruct) hasConfig() bool {
-	return len(ad.Password) != 0
+	return len(ad.password) != 0
 }
 func (ad *adminStruct) loadAdminDetail() {
 	tx, _ := db.Begin(true)
@@ -39,10 +39,10 @@ func (ad *adminStruct) loadAdminDetail() {
 	b, _ := tx.CreateBucketIfNotExists([]byte("system"))
 	v := b.Get(adminPassword_s)
 	t := b.Get(adminCreatTime_s)
-	admin.Password = string(v)
+	admin.password = string(v)
 	if len(t) != 0 {
 		_time, _ := time.Parse("2006-01-02 15:04:05", string(t))
-		admin.CreateTime = _time
+		admin.CreateTime = _time.String()
 	}
 }
 func (ad *adminStruct) setPassword(s string) {
@@ -53,7 +53,7 @@ func (ad *adminStruct) setPassword(s string) {
 
 func (ad *adminStruct) getConfig() *adminStruct {
 	_c := *ad
-	_c.Password = ""
+	_c.password = ""
 	return &_c
 }
 
@@ -67,7 +67,7 @@ func getAdminStatus(ctx iris.Context) {
 
 }
 func setAdminPassword(ctx iris.Context) {
-	if admin.Password != "" {
+	if admin.password != "" {
 		errorHandleJSON(ctx, errors.New("Password exists"), authErr)
 		return
 	}
@@ -76,7 +76,7 @@ func setAdminPassword(ctx iris.Context) {
 		errorHandleJSON(ctx, err, userUploadErr)
 		return
 	} else {
-		if len(c.Password) == 0 {
+		if len(c.password) == 0 {
 			errorHandleJSON(ctx, errors.New("Upload value not format"), userUploadErr)
 			return
 		} else {
@@ -86,15 +86,17 @@ func setAdminPassword(ctx iris.Context) {
 				return
 			}
 			b := tx.Bucket([]byte("system"))
-			p := cryptoByte(c.Password)
+			p := cryptoByte(c.password)
 			log.Print(p)
 			b.Put(adminPassword_s, []byte(p))
+			t := time.Now()
+			b.Put(adminCreatTime_s, []byte(t.String()))
 			err = tx.Commit()
 			if err != nil {
 				errorHandleJSON(ctx, err, dbErr)
 				return
 			}
-			admin.Password = p
+			admin.password = p
 			session := sess.Start(ctx)
 			session.Set("authenticated", true)
 			basicJSON(ctx)

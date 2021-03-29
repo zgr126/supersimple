@@ -36,11 +36,17 @@ export default {
     let getAdminStatus = this.axios.get('status')
     Promise.all([setTimeout1s,getAdminStatus]).then(_e=>{
       this.showWelcome = false
-      let e = _e[1]
-      if (e.data == null){
-        this.$router.push('/init')
-      }else{
-        this.$router.push('/index')
+      this.$router.push('/index')
+    }).catch(e=>{
+      let code = e.response.status
+      let data = e.response.data
+      if (code == 403){
+        this.showWelcome = false
+        if (data.data && data.data.CreateTime){
+          this.$router.push('/login')
+        }else{
+          this.$router.push('/init')
+        }
       }
     })
   }

@@ -27,7 +27,7 @@ func setRouter(app *iris.Application) {
 	app.Get("/upload", uploadView)
 	app.Post("/upload", upload)
 	app.PartyFunc("/admin", func(basic iris.Party) {
-		basic.Get("/status", getAdminStatus, auth)
+		basic.Get("/status", authContinue, getAdminStatus)
 		basic.Post("/password", auth, setAdminPassword)
 	})
 
@@ -80,18 +80,21 @@ func index(ctx iris.Context) {
 	// ctx.Redirect("/upload")
 }
 
+func authContinue(ctx iris.Context) {
+	auth(ctx)
+	ctx.Next()
+}
 func auth(ctx iris.Context) {
 
 	session := sess.Start(ctx)
 	auth, _ := session.GetBoolean(adminAuthStr)
 
 	if !auth {
-		fmt.Print("not auth")
+		fmt.Print("not auth \n")
 		ctx.StatusCode(iris.StatusForbidden)
-		return
 	}
 	fmt.Print("auth")
-	ctx.Next()
+
 }
 
 func setCors(ctx iris.Context) {
@@ -107,6 +110,7 @@ func cors(ctx iris.Context) {
 }
 
 func errorHandle(ctx iris.Context) {
+	fmt.Print("errorcode")
 	setCors(ctx)
 	if ctx.Request().Method == "OPTIONS" {
 		ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
@@ -130,7 +134,7 @@ func errorHandleJSON(ctx iris.Context, err error, code errorCode) {
 // basic response null data
 func basicJSON(ctx iris.Context) {
 	var _json = &ResponseBean{
-		Code: 200,
+		Code: 100,
 	}
 	var _byte, _ = json.Marshal(_json)
 	ctx.Binary(_byte)
@@ -139,7 +143,7 @@ func basicJSON(ctx iris.Context) {
 // basic response
 func commonResponseJSON(ctx iris.Context, i interface{}) {
 	var _json = &ResponseBean{
-		Code: 200,
+		Code: 100,
 		Data: i,
 		Msg:  "",
 	}

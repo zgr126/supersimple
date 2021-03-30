@@ -34,20 +34,36 @@ export default {
       },1000)
     })
     let getAdminStatus = this.axios.get('status')
-    Promise.all([setTimeout1s,getAdminStatus]).then(_e=>{
+    let getAdminApp = this.axios.get('app')
+    this.Utils.promiseX([setTimeout1s,getAdminStatus, getAdminApp]).then(_e=>{
       this.showWelcome = false
-      this.$router.push('/index')
-    }).catch(e=>{
-      let code = e.response.status
-      let data = e.response.data
-      if (code == 403){
-        this.showWelcome = false
-        if (data.data && data.data.CreateTime){
-          this.$router.push('/login')
-        }else{
-          this.$router.push('/init')
-        }
+      let auth = _e[2]
+      let adminS = _e[1]
+      let hasCreate = false
+      if (!this.IsErrType(adminS)){
+        hasCreate = !!adminS.data.CreateTime
       }
+      if (this.IsErrType(auth)){
+        if (auth.response.status == 403){
+          this.showWelcome = false
+          if (hasCreate){
+            this.$router.push('/login')
+          }else{
+            this.$router.push('/init')
+          }
+        }
+      }else{
+        this.$router.push('/index')
+      }
+
+      
+      // if () 
+      // let code = e.response.status
+      // let data = e.response.data
+      // if (code == 403){
+        
+      // }
+      // this.$router.push('/index')
     })
   }
 }

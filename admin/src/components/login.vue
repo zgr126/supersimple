@@ -3,11 +3,8 @@
     
     <el-card shadow="hover">
       <el-form ref="form" :model="form" :rules="rules">
-        <el-form-item label="Set Admin Password" prop="adminpass">
+        <el-form-item label="Admin Password" prop="adminpass">
           <el-input class="input_c" v-model="form.adminpass" placeholder="password" show-password></el-input>
-        </el-form-item>
-        <el-form-item label="Password Again" prop="adminpassR">
-          <el-input class="input_c" v-model="form.adminpassR" placeholder="password" show-password></el-input>
         </el-form-item>
         <ajax-button label="Commit" @click="pushAjax" ref="ajaxbtn"></ajax-button>
       </el-form>
@@ -26,16 +23,7 @@ export default {
       } else {
         callback();
       }
-    };
-    var validatePass2 = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('Please input Password'));
-      } else if (value !== this.form.adminpass) {
-        callback(new Error('Password does not match'));
-      } else {
-        callback();
-      }
-    };
+    }
     return {
       adminpass: '',
       form: {
@@ -47,11 +35,7 @@ export default {
         adminpass: [
           { validator: validatePass, trigger: 'blur' },
           { min: 8, max: 100, message: 'length from 8 to 100', trigger: 'blur' }
-        ],
-        adminpassR: [
-          { validator: validatePass2, trigger: 'blur' },
-          { min: 8, max: 100, message: 'length from 8 to 100', trigger: 'blur' }
-        ],
+        ]
       }
     }
   },
@@ -71,7 +55,7 @@ export default {
       // this.axios.get('password').then(e=>{
       //   console.log(e)
       // })
-      let p = this.axios.post('setPassword', {
+      let p = this.axios.post('login', {
         password: this.form.adminpass
       })
       let v = this.$refs['ajaxbtn'].push(p)
@@ -91,7 +75,6 @@ export default {
   max-width 300px
   margin auto
 /deep/ .el-form-item
-  margin 0 0 8px 0
   /deep/ .el-form-item__label
     line-height 30px
 .ok

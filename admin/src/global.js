@@ -1,5 +1,7 @@
 
-/*cookie管理*/
+import utils from './utils/utils'
+
+// cookie manager
 var Cookie = {
   getExpiresDate:function(days, hours, minutes) {
       var ExpiresDate = new Date();
@@ -67,6 +69,8 @@ export default {
   install (Vue, options) {
     Vue.prototype.Global = globalVars
     Vue.prototype.Cookie = Cookie
+    Vue.prototype.Utils = utils
+    Vue.prototype.IsErrType = utils.typeCheck.isError
   },
   globalVars,
   Cookie,

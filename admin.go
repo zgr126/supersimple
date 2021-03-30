@@ -2,7 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -13,6 +16,10 @@ type adminStruct struct {
 	password   string `json: ""`
 	CreateTime string `json: "createTime"`
 	db         *bolt.DB
+}
+
+type uploadPass struct {
+	Password string `json: "password"`
 }
 
 var admin *adminStruct
@@ -39,10 +46,11 @@ func (ad *adminStruct) loadAdminDetail() {
 	b, _ := tx.CreateBucketIfNotExists([]byte("system"))
 	v := b.Get(adminPassword_s)
 	t := b.Get(adminCreatTime_s)
+
 	admin.password = string(v)
 	if len(t) != 0 {
-		_time, _ := time.Parse("2006-01-02 15:04:05", string(t))
-		admin.CreateTime = _time.String()
+		admin.CreateTime = string(t)
+
 	}
 }
 func (ad *adminStruct) setPassword(s string) {
@@ -67,26 +75,28 @@ func getAdminStatus(ctx iris.Context) {
 
 }
 func setAdminPassword(ctx iris.Context) {
+	fmt.Print(admin.password)
+
 	if admin.password != "" {
 		errorHandleJSON(ctx, errors.New("Password exists"), authErr)
 		return
 	}
-	c := &adminStruct{}
+	c := &uploadPass{}
 	if err := ctx.ReadJSON(c); err != nil {
 		errorHandleJSON(ctx, err, userUploadErr)
 		return
 	} else {
-		if len(c.password) == 0 {
+		if len(c.Password) == 0 {
 			errorHandleJSON(ctx, errors.New("Upload value not format"), userUploadErr)
 			return
 		} else {
 			tx, err := admin.db.Begin(true)
 			if err != nil {
-				errorHandleJSON(ctx, errors.New("Upload value not format"), userUploadErr)
+				errorHandleJSON(ctx, err, dbErr)
 				return
 			}
 			b := tx.Bucket([]byte("system"))
-			p := cryptoByte(c.password)
+			p := cryptoByte(c.Password)
 			log.Print(p)
 			b.Put(adminPassword_s, []byte(p))
 			t := time.Now()
@@ -97,15 +107,41 @@ func setAdminPassword(ctx iris.Context) {
 				return
 			}
 			admin.password = p
-			session := sess.Start(ctx)
-			session.Set("authenticated", true)
+			admin.CreateTime = t.String()
+			setAuth(ctx)
 			basicJSON(ctx)
 		}
 	}
 }
 
+func setAuth(ctx iris.Context) {
+	host := strings.Split(ctx.Host(), ":")[0]
+
+	session := sess.Start(ctx)
+	session.Set("authenticated", true)
+	session.Set("Domain", host)
+	// ctx.SetCookieKV("Domain", host)
+	s := strconv.Itoa(session.Len())
+	log.Print(s)
+}
+
 func login(ctx iris.Context) {
 
+	c := &uploadPass{}
+	if err := ctx.ReadJSON(c); err != nil {
+		errorHandleJSON(ctx, err, userUploadErr)
+		return
+	} else {
+		p := cryptoByte(c.Password)
+		if p == admin.password {
+			setAuth(ctx)
+			basicJSON(ctx)
+
+		} else {
+			ctx.StatusCode(iris.StatusForbidden)
+			errorHandleJSON(ctx, errors.New("password not pass"), userUploadErr)
+		}
+	}
 }
 
 func logout(ctx iris.Context) {

@@ -27,8 +27,10 @@ func setRouter(app *iris.Application) {
 	app.Get("/upload", uploadView)
 	app.Post("/upload", upload)
 	app.PartyFunc("/admin", func(basic iris.Party) {
-		basic.Get("/status", authContinue, getAdminStatus)
-		basic.Post("/password", auth, setAdminPassword)
+		basic.Get("/status", getAdminStatus)
+		basic.Post("/setPassword", setAdminPassword)
+		basic.Get("/app", authContinue, getApp)
+		basic.Post("/login", login)
 	})
 
 	{
@@ -92,6 +94,7 @@ func auth(ctx iris.Context) {
 	if !auth {
 		fmt.Print("not auth \n")
 		ctx.StatusCode(iris.StatusForbidden)
+		return
 	}
 	fmt.Print("auth")
 
@@ -103,7 +106,10 @@ func setCors(ctx iris.Context) {
 	ctx.Header("Access-Control-Allow-Origin", strings.Join(Origin, ""))
 	ctx.Header("Access-Control-Allow-Credentials", "")
 	ctx.Header("Access-Control-Allow-Credentials", "true")
+	ctx.Header("Access-Control-Allow-Methods", "")
+	ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
 }
+
 func cors(ctx iris.Context) {
 	setCors(ctx)
 	ctx.Next()

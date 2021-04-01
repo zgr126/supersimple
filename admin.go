@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -114,15 +112,8 @@ func setAdminPassword(ctx iris.Context) {
 	}
 }
 
-func setAuth(ctx iris.Context) {
-	host := strings.Split(ctx.Host(), ":")[0]
+func removeAuth(ctx iris.Context) {
 
-	session := sess.Start(ctx)
-	session.Set("authenticated", true)
-	session.Set("Domain", host)
-	// ctx.SetCookieKV("Domain", host)
-	s := strconv.Itoa(session.Len())
-	log.Print(s)
 }
 
 func login(ctx iris.Context) {

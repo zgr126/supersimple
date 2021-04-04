@@ -2,8 +2,7 @@ package main
 
 import (
 	"crypto/sha256"
-	"fmt"
-	"io"
+	"encoding/hex"
 	"reflect"
 )
 
@@ -23,9 +22,9 @@ func CopyStruct(src, dst interface{}) {
 	}
 }
 
-func cryptoByte(b string) string {
+func cryptoByte(b []byte) string {
 	h := sha256.New()
-	io.WriteString(h, b)
-	sum := fmt.Sprintf("%x", b)
-	return sum
+	_b := h.Sum(b)
+
+	return hex.EncodeToString(_b)
 }

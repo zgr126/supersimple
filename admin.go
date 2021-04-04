@@ -16,8 +16,8 @@ type adminStruct struct {
 	db         *bolt.DB
 }
 
-type uploadPass struct {
-	Password string `json: "password"`
+type upload_Pass struct {
+	Password []byte `json: "password"`
 }
 
 var admin *adminStruct
@@ -54,7 +54,6 @@ func (ad *adminStruct) loadAdminDetail() {
 func (ad *adminStruct) setPassword(s string) {
 	// sum := sha256.Sum256([]byte(s))
 	// tx, err := ad.db.Begin(true)
-
 }
 
 func (ad *adminStruct) getConfig() *adminStruct {
@@ -79,7 +78,7 @@ func setAdminPassword(ctx iris.Context) {
 		errorHandleJSON(ctx, errors.New("Password exists"), authErr)
 		return
 	}
-	c := &uploadPass{}
+	c := &upload_Pass{}
 	if err := ctx.ReadJSON(c); err != nil {
 		errorHandleJSON(ctx, err, userUploadErr)
 		return
@@ -118,7 +117,7 @@ func removeAuth(ctx iris.Context) {
 
 func login(ctx iris.Context) {
 
-	c := &uploadPass{}
+	c := &upload_Pass{}
 	if err := ctx.ReadJSON(c); err != nil {
 		errorHandleJSON(ctx, err, userUploadErr)
 		return

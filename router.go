@@ -19,9 +19,8 @@ type ResponseBean struct {
 func setRouter(app *iris.Application) {
 
 	app.Use(cors)
-	app.OnAnyErrorCode(errorHandle)
-	// Serve assets (e.g. javascript, css).
-	// app.HandleDir("/public", iris.Dir("./public"))
+	app.OnErrorCode(403, errorHandle)
+
 	app.Get("/", index)
 	app.Any("/{name}", testRouter)
 	app.Get("/upload", uploadView)

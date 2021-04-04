@@ -44,7 +44,7 @@ export default {
         hasCreate = !!adminS.data.CreateTime
       }
       if (this.IsErrType(auth)){
-        if (auth.response.status == 403){
+        if (auth.response && auth.response.status == 403){
           this.showWelcome = false
           if (hasCreate){
             this.$router.push('/login')

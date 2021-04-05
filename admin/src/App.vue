@@ -27,44 +27,58 @@ export default {
   mounted(){
     this.showWelcome = true
   },
-  beforeCreate(){
-    let setTimeout1s = new Promise((resolve, reject)=>{
-      setTimeout(e=>{
-        resolve()
-      },1000)
-    })
-    let getAdminStatus = this.axios.get('status')
-    let getAdminApp = this.axios.get('app')
-    this.Utils.promiseX([setTimeout1s,getAdminStatus, getAdminApp]).then(_e=>{
-      this.showWelcome = false
-      let auth = _e[2]
-      let adminS = _e[1]
-      let hasCreate = false
-      if (!this.IsErrType(adminS)){
-        hasCreate = !!adminS.data.CreateTime
+  watch:{
+    $route(v){
+      if (!(v.path == '/' || v.path == '')){
+        this.showWelcome = false
       }
-      if (this.IsErrType(auth)){
-        if (auth.response && auth.response.status == 403){
-          this.showWelcome = false
-          if (hasCreate){
-            this.$router.push('/login')
-          }else{
-            this.$router.push('/init')
-          }
-        }
-      }else{
-        this.$router.push('/index')
-      }
-
-      
-      // if () 
-      // let code = e.response.status
-      // let data = e.response.data
-      // if (code == 403){
-        
-      // }
-      // this.$router.push('/index')
-    })
+    }
+  },
+  async beforeCreate(){
+    this.axios.get('app').then(
+      this.$router.push('index')
+    )
+    // register global getapplicationStatus function
+    // this.Global.getApplicationStatus = async ()=>{
+    //   // return   0：need init 1: need login  2: all fine
+    //   let status = -1
+    //   let getAdminStatus = this.axios.get('status')
+    //   let getAdminApp = this.axios.get('app')
+    //   await this.Utils.promiseX([getAdminStatus, getAdminApp]).then(async _e=>{
+    //     let auth = _e[1]
+    //     let adminS = _e[0]
+    //     let hasCreate = false
+    //     if (!this.IsErrType(adminS)){
+    //       hasCreate = !!adminS.createTime
+    //     }
+    //     if (this.IsErrType(auth)){
+    //       if (auth.response && auth.response.status == 403){
+    //         if (hasCreate){
+    //           status= 1
+    //         }else{
+    //           status= 0
+    //         }
+    //       }
+    //     }else{
+    //       status= 2
+    //     }
+    //   })
+    //   return status
+    // }
+    // let v = await this.Global.getApplicationStatus()
+    // setTimeout(e=>{
+    //   this.showWelcome = false
+    //   switch(v){
+    //     case 0:
+    //       this.$router.push('/init')
+    //       break
+    //     case 1:
+    //       this.$router.push('/login')
+    //       break
+    //     case 2:
+    //       this.$router.push('/index')
+    //   }
+    // },500)
   }
 }
 </script>
@@ -95,7 +109,7 @@ body
   // width 100%
   // padding 20px
   position relative
-  overflow hidden
+  // overflow hidden
 * 
   transition: All .2s ease-in-out
   outline:none;

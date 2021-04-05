@@ -2,8 +2,9 @@
   <div class="passbox">
     
     <el-card shadow="hover">
+      <label class="cardlabel">Set Admin Password</label>
       <el-form ref="form" :model="form" :rules="rules">
-        <el-form-item label="Set Admin Password" prop="adminpass">
+        <el-form-item label="password" prop="adminpass">
           <el-input class="input_c" v-model="form.adminpass" placeholder="password" show-password></el-input>
         </el-form-item>
         <el-form-item label="Password Again" prop="adminpassR">
@@ -76,7 +77,7 @@ export default {
       })
       let v = this.$refs['ajaxbtn'].push(p)
       v.then(e=>{
-        console.log('1')
+        this.$router.replace('/index')
       })
       return p
     }
@@ -85,15 +86,21 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+@import '../main.styl'
 .passbox
-  padding 10px
+  padding-top: 50px;
+
 /deep/ .el-card
   max-width 300px
   margin auto
 /deep/ .el-form-item
-  margin 0 0 8px 0
+  // margin 0 0 8px 0
   /deep/ .el-form-item__label
     line-height 30px
+/deep/ .el-card
+  overflow inherit
+  /deep/ .el-card__body
+    position relative
 .ok
   margin-top 10px
   width: 100%;

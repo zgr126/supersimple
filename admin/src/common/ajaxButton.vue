@@ -14,6 +14,7 @@ export default {
     data(){
         return{
             status: 0, //0: input 1: loading 2: success 3: failed
+            sourceLabel: ''
         }
     },
     props: ['label', 'promise'],
@@ -27,19 +28,26 @@ export default {
                 return _p
             }
             this.status = 1
-            return _p.then(e=>{
+            return _p.then(async e=>{
                 console.log('ajaxok')
-                this.success(e)
+                await this.successTimeout()
+                // this.success(e)
                 this.status = 2
             }).catch(e=>{
                 this.status = 3
             })
+        },
+        async successTimeout(){
+            await setTimeout(e=>{
+                
+            }, 2000)
         },
         reset(){
             this.status = 0
         }
     },
     mounted(){
+        this.sourceLabel = this.label
     }
 }
 </script>

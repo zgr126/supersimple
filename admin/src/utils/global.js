@@ -1,5 +1,5 @@
 
-import utils from './utils/utils'
+import utils from './utils'
 
 // cookie manager
 var Cookie = {
@@ -62,9 +62,10 @@ var Cookie = {
 };
 let globalVars = {
   name: 'ss',
-  host: document.location.origin
+  host: document.location.origin,
+  appData: [],
+  getApplicationStatus: null,
 }
-
 export default {
   install (Vue, options) {
     Vue.prototype.Global = globalVars

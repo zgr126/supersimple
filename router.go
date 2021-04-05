@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/kataras/iris/v12"
@@ -17,19 +18,22 @@ type ResponseBean struct {
 }
 
 func setRouter(app *iris.Application) {
+	// app.UseRouter(crs)
 
-	app.Use(cors)
-	app.OnErrorCode(403, errorHandle)
+	app.Use(xcors)
+	app.OnErrorCode(403, errorHandle403)
+	app.OnErrorCode(404, errorHandle404)
 
 	app.Get("/", index)
 	app.Any("/{name}", testRouter)
 	app.Get("/upload", uploadView)
 	app.Post("/upload", upload)
-	app.PartyFunc("/admin", func(basic iris.Party) {
-		basic.Get("/status", getAdminStatus)
-		basic.Post("/setPassword", setAdminPassword)
-		basic.Get("/app", authContinue, getApp)
-		basic.Post("/login", login)
+	app.PartyFunc("/admin", func(adminRouter iris.Party) {
+		adminRouter.Get("/status", getAdminStatus)
+		adminRouter.Post("/setPassword", setAdminPassword)
+		adminRouter.Get("/app", authContinue, getApp)
+		adminRouter.Post("/login", login)
+		adminRouter.Post("/logout", logout)
 	})
 
 	{
@@ -86,17 +90,17 @@ func authContinue(ctx iris.Context) {
 	ctx.Next()
 }
 func auth(ctx iris.Context) {
-
+	s := ctx.Clone().RouteName()
+	log.Print(s)
 	session := sess.Start(ctx)
 	auth, _ := session.GetBoolean(adminAuthStr)
-
+	sss := session.GetAll()
+	log.Print(sss)
 	if !auth {
-		fmt.Print("not auth \n")
+		log.Print("auth faild")
 		ctx.StatusCode(iris.StatusForbidden)
 		return
 	}
-	fmt.Print("auth")
-
 }
 
 func setCors(ctx iris.Context) {
@@ -109,15 +113,17 @@ func setCors(ctx iris.Context) {
 	ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
 }
 
-func cors(ctx iris.Context) {
+func xcors(ctx iris.Context) {
 	setCors(ctx)
 	ctx.Next()
 }
 
-func errorHandle(ctx iris.Context) {
-	fmt.Print("errorcode")
+func errorHandle404(ctx iris.Context) {
 	setCors(ctx)
 	if ctx.Request().Method == "OPTIONS" {
+		ctx.Header("Access-Control-Allow-Methods", "")
+		ctx.Header("Access-Control-Allow-Headers", "")
+		ctx.Header("Access-Control-Max-Age", "")
 		ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
 		ctx.Header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization")
 		ctx.Header("Access-Control-Max-Age", "2592000")
@@ -125,32 +131,15 @@ func errorHandle(ctx iris.Context) {
 		return
 	}
 }
+func errorHandle403(ctx iris.Context) {
 
-// common error response
-func errorHandleJSON(ctx iris.Context, err error, code errorCode) {
-	var _json = &ResponseBean{
-		Code: int(code),
-		Msg:  err.Error(),
-	}
-	var _byte, _ = json.Marshal(_json)
-	ctx.Binary(_byte)
 }
 
-// basic response null data
-func basicJSON(ctx iris.Context) {
+// common result
+func commonResult(ctx iris.Context, data interface{}) {
 	var _json = &ResponseBean{
 		Code: 100,
-	}
-	var _byte, _ = json.Marshal(_json)
-	ctx.Binary(_byte)
-}
-
-// basic response
-func commonResponseJSON(ctx iris.Context, i interface{}) {
-	var _json = &ResponseBean{
-		Code: 100,
-		Data: i,
-		Msg:  "",
+		Data: data,
 	}
 	_byte, err := json.Marshal(_json)
 	if err != nil {
@@ -158,4 +147,14 @@ func commonResponseJSON(ctx iris.Context, i interface{}) {
 	} else {
 		ctx.Binary(_byte)
 	}
+}
+
+// error result
+func errorHandleJSON(ctx iris.Context, err error, code errorCode) {
+	var _json = &ResponseBean{
+		Code: int(code),
+		Msg:  err.Error(),
+	}
+	var _byte, _ = json.Marshal(_json)
+	ctx.Binary(_byte)
 }

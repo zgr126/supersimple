@@ -4,8 +4,8 @@ import VueRouter from 'vue-router'
 import routes from './router.js'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-import global from './global'
-import filter from './filter'
+import global from './utils/global'
+import filter from './utils/filter'
 import "babel-polyfill"
 import Es6Promise from 'es6-promise'
 Es6Promise.polyfill()
@@ -30,20 +30,14 @@ axios.interceptors.request.use( (request)=> {
 })
 axios.interceptors.response.use(function (response) {
   let data = response.data
-  if (data.code === 403) {
-    // console.log(data.status)
-    localStorage.removeItem('user')
-    document.cookie = ''
-    document.location.hash = '#/'
-    window.location.reload()
-  }
-  if (response.config.method == 'options') {
-    return '1'
-  }
-  if (data && data.code === 100) {    
-    console.log(response.request) 
-    // if ()       
-    return data  
+  // if (data.code === 403) {
+    
+  // }
+  // if (response.config.method == 'options') {
+  //   return '1'
+  // }
+  if (data && data.code === 100) {
+    return data.data 
   } else {            
     ElementUI.Message({
       type: 'error',
@@ -53,7 +47,16 @@ axios.interceptors.response.use(function (response) {
   }
   
 }, function (error) {
-  return Promise.reject(error)
+  if (error.response && error.response.status == 403){
+    axios.get('status').then(e=>{
+      if (e && e.createTime){
+        router.push('/login')
+      }else{
+        router.push('/init')
+      }
+    })
+  }
+  // return Promise.reject(error)
   // ElementUI.Message({
   //   type: 'error',
   //   message: error.message

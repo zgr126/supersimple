@@ -3,14 +3,15 @@
       <div class="top">
         
         <div class="t_m">
-          <div v-for="(i, index) of top" :key="index" @click="changeRoute(i)" :class="{active: nowSelect == i.name}">
-            <p class="p2">{{i.elabel}}</p>
+          <div v-for="(i, index) of top" :key="index" @click="topBtnClick(i)" :class="{active: nowSelect == i.name}">
+            <p class="p2">{{i.label}}</p>
           </div>
         </div>
         <div class="t_r">
           <span class="right">
           </span>
         </div>
+        <div></div>
       </div>
   </div>
 </template>
@@ -31,15 +32,23 @@ export default {
     }
     return {
       top:[
-        {name: '', label: '首页', elabel: 'HOME'},
-        {name: 'doc', label: '文件', elabel: 'DOCUMENT'},
-        {name: 'share', label: '共享', elabel: 'SHARE'},
+        {name: 'home', label: 'Home'},
+        {name: 'setting', label: 'Setting'},
+        {name: 'logout', label: 'Logout'},
       ],
       nowSelect: ''
     }
   },
   methods:{
-    
+    topBtnClick(i){
+      if (i.name == 'logout'){
+        this.axios.post('/logout').then(e=>{
+          this.$router.replace('/')
+        }).catch()
+        
+      }
+      this.nowSelect = i.name
+    }
   },
   mounted(){
     this.nowSelect = this.$route.path.slice(1)

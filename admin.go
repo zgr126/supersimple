@@ -2,8 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"log"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -11,13 +9,13 @@ import (
 )
 
 type adminStruct struct {
-	password   string `json: ""`
-	CreateTime string `json: "createTime"`
+	password   string `json:"" `
+	CreateTime string `json:"createTime"`
 	db         *bolt.DB
 }
 
 type upload_Pass struct {
-	Password []byte `json: "password"`
+	Password string `json:"password" validate:"required,min=8,max=300"`
 }
 
 var admin *adminStruct
@@ -41,7 +39,7 @@ func (ad *adminStruct) hasConfig() bool {
 func (ad *adminStruct) loadAdminDetail() {
 	tx, _ := db.Begin(true)
 	defer tx.Commit()
-	b, _ := tx.CreateBucketIfNotExists([]byte("system"))
+	b, _ := tx.CreateBucketIfNotExists([]byte(bean_system))
 	v := b.Get(adminPassword_s)
 	t := b.Get(adminCreatTime_s)
 
@@ -63,17 +61,10 @@ func (ad *adminStruct) getConfig() *adminStruct {
 }
 
 func getAdminStatus(ctx iris.Context) {
-	if !admin.hasConfig() {
-		basicJSON(ctx)
-	} else {
-		commonResponseJSON(ctx, admin.getConfig())
-	}
-	ctx.Next()
-
+	commonResult(ctx, admin.getConfig())
 }
-func setAdminPassword(ctx iris.Context) {
-	fmt.Print(admin.password)
 
+func setAdminPassword(ctx iris.Context) {
 	if admin.password != "" {
 		errorHandleJSON(ctx, errors.New("Password exists"), authErr)
 		return
@@ -93,8 +84,7 @@ func setAdminPassword(ctx iris.Context) {
 				return
 			}
 			b := tx.Bucket([]byte("system"))
-			p := cryptoByte(c.Password)
-			log.Print(p)
+			p := cryptoByte([]byte(c.Password))
 			b.Put(adminPassword_s, []byte(p))
 			t := time.Now()
 			b.Put(adminCreatTime_s, []byte(t.String()))
@@ -106,7 +96,7 @@ func setAdminPassword(ctx iris.Context) {
 			admin.password = p
 			admin.CreateTime = t.String()
 			setAuth(ctx)
-			basicJSON(ctx)
+			commonResult(ctx, nil)
 		}
 	}
 }
@@ -122,10 +112,10 @@ func login(ctx iris.Context) {
 		errorHandleJSON(ctx, err, userUploadErr)
 		return
 	} else {
-		p := cryptoByte(c.Password)
+		p := cryptoByte([]byte(c.Password))
 		if p == admin.password {
 			setAuth(ctx)
-			basicJSON(ctx)
+			commonResult(ctx, nil)
 
 		} else {
 			ctx.StatusCode(iris.StatusForbidden)
@@ -135,5 +125,7 @@ func login(ctx iris.Context) {
 }
 
 func logout(ctx iris.Context) {
-
+	sess.Start(ctx).Clear()
+	sess.Destroy(ctx)
+	commonResult(ctx, nil)
 }

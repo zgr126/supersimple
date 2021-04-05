@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
@@ -15,23 +14,18 @@ const (
 )
 
 var (
-	sess = sessions.New(sessions.Config{Cookie: cookieNameForSessionID})
+	sess = sessions.New(sessions.Config{
+		Cookie:       cookieNameForSessionID,
+		AllowReclaim: true,
+	})
 )
 
 func setAuth(ctx iris.Context) {
 	host := strings.Split(ctx.Host(), ":")[0]
-	// cookieConfig := &http.Cookie{
-	// 	Domain: host,
-	// }
-	ctx.SetCookieKV("Domain", host)
-	session := sess.Start(ctx)
-	session.Set("authenticated", true)
+	cookieConfig := func(ctx iris.Context, c *http.Cookie, i uint8) {
+		c.Domain = host
+	}
+	session := sess.Start(ctx, cookieConfig)
+	session.Set(adminAuthStr, true)
 
-	//
-	ctx.SetCookie(&http.Cookie{
-		Domain: host,
-	})
-	log.Print(host)
-	// s := strconv.Itoa(session.Len())
-	// log.Print(s)
 }

@@ -10,19 +10,21 @@ const (
 )
 
 type app struct {
-	Beans      beans
-	HttpHeader map[string]string
+	Beans      beans             `json:"beans"`
+	HttpHeader map[string]string `json:"httpHeader"`
 }
 
 type bean struct {
 	IsFileServer bool
 	Name         string
 	Num          uint64
-	Status       uint8
+	Status       beanStatue
 }
 
+type beanStatue uint8
+
 const (
-	beanStatusNotExist = iota
+	beanStatusNotExist beanStatue = iota
 	beanStatusActive
 	beanStatusDelete
 )
@@ -43,6 +45,5 @@ func getApp(ctx iris.Context) {
 			return nil
 		})
 	})
-
 	commonResult(ctx, _app)
 }

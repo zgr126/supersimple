@@ -26,12 +26,20 @@ export default {
   },
   mounted(){
     this.showWelcome = true
+    setTimeout(e=>{
+      this.hideWelcomeForRouter(this.$route)
+    },1000)
   },
-  watch:{
-    $route(v){
+  methods:{
+    hideWelcomeForRouter(v){
       if (!(v.path == '/' || v.path == '')){
         this.showWelcome = false
       }
+    }
+  },
+  watch:{
+    $route(v){
+      this.hideWelcomeForRouter(v)
     }
   },
   async beforeCreate(){

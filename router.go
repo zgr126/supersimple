@@ -87,6 +87,10 @@ func index(ctx iris.Context) {
 
 func authContinue(ctx iris.Context) {
 	auth(ctx)
+	i := ctx.GetStatusCode()
+	if i != 200 {
+		return
+	}
 	ctx.Next()
 }
 func auth(ctx iris.Context) {
@@ -94,10 +98,7 @@ func auth(ctx iris.Context) {
 	log.Print(s)
 	session := sess.Start(ctx)
 	auth, _ := session.GetBoolean(adminAuthStr)
-	sss := session.GetAll()
-	log.Print(sss)
 	if !auth {
-		log.Print("auth faild")
 		ctx.StatusCode(iris.StatusForbidden)
 		return
 	}

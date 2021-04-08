@@ -7,7 +7,7 @@
         <el-form-item label="Admin Password" prop="adminpass">
           <el-input class="input_c" v-model="form.adminpass" placeholder="password" show-password></el-input>
         </el-form-item>
-        <ajax-button label="Commit" @click="pushAjax" ref="ajaxbtn"></ajax-button>
+        <ajax-button label="Commit" @click="submitForm('form')" ref="ajaxbtn"></ajax-button>
       </el-form>
     </el-card>
   </div>

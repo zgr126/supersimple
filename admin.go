@@ -38,15 +38,14 @@ func (ad *adminStruct) hasConfig() bool {
 }
 func (ad *adminStruct) loadAdminDetail() {
 	tx, _ := db.Begin(true)
+	b, _ := tx.CreateBucketIfNotExists([]byte(app_system))
 	defer tx.Commit()
-	b, _ := tx.CreateBucketIfNotExists([]byte(bean_system))
 	v := b.Get(adminPassword_s)
 	t := b.Get(adminCreatTime_s)
 
 	admin.password = string(v)
 	if len(t) != 0 {
 		admin.CreateTime = string(t)
-
 	}
 }
 func (ad *adminStruct) setPassword(s string) {
@@ -55,9 +54,8 @@ func (ad *adminStruct) setPassword(s string) {
 }
 
 func (ad *adminStruct) getConfig() *adminStruct {
-	_c := *ad
-	_c.password = ""
-	return &_c
+	// ad.password = ""
+	return ad
 }
 
 func getAdminStatus(ctx iris.Context) {
@@ -83,7 +81,7 @@ func setAdminPassword(ctx iris.Context) {
 				errorHandleJSON(ctx, err, dbErr)
 				return
 			}
-			b := tx.Bucket([]byte("system"))
+			b := tx.Bucket([]byte(app_system))
 			p := cryptoByte([]byte(c.Password))
 			b.Put(adminPassword_s, []byte(p))
 			t := time.Now()

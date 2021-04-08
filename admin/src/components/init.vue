@@ -10,7 +10,7 @@
         <el-form-item label="Password Again" prop="adminpassR">
           <el-input class="input_c" v-model="form.adminpassR" placeholder="password" show-password></el-input>
         </el-form-item>
-        <ajax-button label="Commit" @click="pushAjax" ref="ajaxbtn"></ajax-button>
+        <ajax-button label="Commit" @click="submitForm('form')" ref="ajaxbtn"></ajax-button>
       </el-form>
     </el-card>
   </div>
@@ -61,7 +61,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         console.log(valid)
         if (valid) {
-          console.log("ok")
+          this.pushAjax()
         } else {
           console.log('error submit!!');
           return false;

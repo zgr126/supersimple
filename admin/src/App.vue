@@ -43,9 +43,10 @@ export default {
     }
   },
   async beforeCreate(){
-    this.axios.get('app').then(
+    this.axios.get('app').then(e=>{
+      this.Global.appData = e
       this.$router.push('index')
-    )
+    })
     // register global getapplicationStatus function
     // this.Global.getApplicationStatus = async ()=>{
     //   // return   0：need init 1: need login  2: all fine

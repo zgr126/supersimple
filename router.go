@@ -34,6 +34,8 @@ func setRouter(app *iris.Application) {
 		adminRouter.Get("/app", authContinue, getApp)
 		adminRouter.Post("/login", login)
 		adminRouter.Post("/logout", logout)
+		//beans
+		adminRouter.Post("/addBean", addBean)
 	})
 
 	{

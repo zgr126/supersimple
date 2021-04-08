@@ -15,6 +15,11 @@ module.exports = {
                 inline: 'fallback', chunkFilename: 'workerName.[chunkhash].js'
               })
             .end()
+        // config.module.rule('styl').options({
+        //     import:[
+        //         path.join(__dirname, "./src/main.styl")
+        //     ]
+        // })
     },
     pages:{
         // forgotpwd: {          

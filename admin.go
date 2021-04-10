@@ -38,7 +38,7 @@ func (ad *adminStruct) hasConfig() bool {
 }
 func (ad *adminStruct) loadAdminDetail() {
 	tx, _ := db.Begin(true)
-	b, _ := tx.CreateBucketIfNotExists([]byte(app_system))
+	b, _ := tx.CreateBucketIfNotExists(app_system)
 	defer tx.Commit()
 	v := b.Get(adminPassword_s)
 	t := b.Get(adminCreatTime_s)

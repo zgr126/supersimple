@@ -106,6 +106,7 @@ func connectDB() error {
 		log.Fatal(err)
 	}
 	newAdmin(db)
+	newApp()
 	// defer db.Close()
 	return err
 }

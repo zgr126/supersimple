@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/kataras/iris/v12"
@@ -23,11 +21,15 @@ func setRouter(app *iris.Application) {
 	app.Use(xcors)
 	app.OnErrorCode(403, errorHandle403)
 	app.OnErrorCode(404, errorHandle404)
-
+	app.Done(routeDone)
 	app.Get("/", index)
-	app.Any("/{name}", testRouter)
+
 	app.Get("/upload", uploadView)
 	app.Post("/upload", upload)
+	app.PartyFunc("/app", func(_app iris.Party) {
+		_app.Any("/{name}", appauth, appRouter)
+	})
+	app.Get("/testdb", testGetAll)
 	app.PartyFunc("/admin", func(adminRouter iris.Party) {
 		adminRouter.Get("/status", getAdminStatus)
 		adminRouter.Post("/setPassword", setAdminPassword)
@@ -96,8 +98,7 @@ func authContinue(ctx iris.Context) {
 	ctx.Next()
 }
 func auth(ctx iris.Context) {
-	s := ctx.Clone().RouteName()
-	log.Print(s)
+
 	session := sess.Start(ctx)
 	auth, _ := session.GetBoolean(adminAuthStr)
 	if !auth {
@@ -117,6 +118,7 @@ func setCors(ctx iris.Context) {
 }
 
 func xcors(ctx iris.Context) {
+	ctx.ContentType("application/json")
 	setCors(ctx)
 	ctx.Next()
 }
@@ -138,17 +140,23 @@ func errorHandle403(ctx iris.Context) {
 
 }
 
+func routeDone(ctx iris.Context) {
+
+}
+
 // common result
 func commonResult(ctx iris.Context, data interface{}) {
 	var _json = &ResponseBean{
 		Code: 100,
 		Data: data,
 	}
-	_byte, err := json.Marshal(_json)
+	// _byte, err := json.Marshal(_json)
+	_, err := ctx.JSON(_json)
 	if err != nil {
 		errorHandleJSON(ctx, errors.New("some error, please retry"), jsonParseErr)
 	} else {
-		ctx.Binary(_byte)
+		// ctx.Binary(_byte)
+
 	}
 }
 
@@ -158,6 +166,7 @@ func errorHandleJSON(ctx iris.Context, err error, code errorCode) {
 		Code: int(code),
 		Msg:  err.Error(),
 	}
-	var _byte, _ = json.Marshal(_json)
-	ctx.Binary(_byte)
+	// var _byte, _ = json.Marshal(_json)
+	// ctx.Binary(_byte)
+	ctx.JSON(_json)
 }

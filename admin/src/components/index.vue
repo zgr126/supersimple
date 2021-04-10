@@ -26,8 +26,7 @@
         <el-dialog
         title="Add Document"
         :visible.sync="showDialogDocument"
-        class="common-dialog"
-        :before-close="handleClose">
+        class="common-dialog">
             <el-form ref="newDocumentForm" :model="newDocumentForm" :rules="rules">
                 <el-form-item label="name" prop="name">
                     <el-input class="input_c" v-model="newDocumentForm.name" show-password></el-input>
@@ -41,8 +40,7 @@
         <el-dialog
         title="Add FileServer"
         :visible.sync="showDialogFileServer"
-        class="dialog"
-        :before-close="handleClose">
+        class="dialog">
             <span>这是一段信息</span>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisible = false">取 消</el-button>
@@ -90,31 +88,38 @@ export default {
         pushAjax(formName){
             switch(formName){
                 case 'newDocumentForm':
-                    this.addDocument()
+                    this.addDocument(formName)
                     break
                 case 'newFile':
                     break
             }
         },
-        addDocument(){
+        addDocument(formName){
             this.axios.post('addBean', {
                 name: this.newDocumentForm.name,
                 doc: this.newDocumentForm.doc
             }).then(e=>{
-                console.log(e)
+                this.$refs[formName].resetFields()
+                this.showDialogDocument = false
+                this.$message.success('Add Document success')
+                this.refrushPage()
             })
         },
         addFileServer(){
             
+        },
+        refrushPage(){
+            this.axios.get('/app').then(e=>{
+                this.beans = e.beans
+                this.httpHeaders = e.httpHeaders
+            })
         }
     },
     mounted(){
+        this.refrushPage()
     },
     beforeCreate(){
-        this.axios.get('/app').then(e=>{
-            this.beans = e.beans
-            this.httpHeaders = e.httpHeaders
-        })
+        
     },
     components:{
         top
@@ -143,11 +148,22 @@ export default {
                 min-width: 250px;
                 min-height: 150px;
                 margin: 10px;
+                width: calc(33% - 20px);
             .box-card-add
                 .addicon
                     display: inline-block;
                     line-height: 110px;
                     font-size: 30px;
+@media (max-width: 860px) and (min-width: 570px) {
+    /deep/ .el-card{
+        width calc(50% - 30px)!important
+    }
+}
+@media (max-width: 570px)  {
+    /deep/ .el-card{
+        width calc(100% - 20px)!important
+    }
+}
 /deep/ .el-divider__text
     font-size 20px
 .common-dialog

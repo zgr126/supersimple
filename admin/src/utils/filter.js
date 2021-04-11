@@ -83,7 +83,6 @@ export default {
     })
     Vue.filter('byteFilter', function (value) {
       let s =  byteFilter(value)
-      console.log(s)
       return s
     })
   }

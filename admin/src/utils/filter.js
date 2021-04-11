@@ -40,6 +40,21 @@ const Dayago = (v, v2)=>{
   return Math.floor(d)
 }
 
+function byteFilter(v){
+  let _v = 0
+  if (!v){
+    return '0 B'
+  }else if (v<1000){
+    return String(v) + ' B'
+  }else if (v>1000){
+    _v = v/1000
+    return String(_v.toFixed(2)) + ' KB'
+  }else if (v>1000000){
+    _v = v/1000000
+    return String(_v.toFixed(2)) + ' MB'
+  }
+}
+
 export default {
   install (Vue, options) {
     Vue.filter('Time', function (value, format) {
@@ -65,6 +80,11 @@ export default {
     Vue.filter('Dayago', function (value,v, v2) {
       if (!value) return '0天'
       return Dayago(v, v2)
+    })
+    Vue.filter('byteFilter', function (value) {
+      let s =  byteFilter(value)
+      console.log(s)
+      return s
     })
   }
 }

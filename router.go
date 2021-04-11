@@ -27,17 +27,29 @@ func setRouter(app *iris.Application) {
 	app.Get("/upload", uploadView)
 	app.Post("/upload", upload)
 	app.PartyFunc("/app", func(_app iris.Party) {
-		_app.Any("/{name}", appauth, appRouter)
+		_app.Get("/{name}", appGet)
+		_app.Post("/{name}/page", appPostPage)
+		_app.Post("/{name}", appPost)
+		_app.Post("/{name}/batch", appPost)
+		_app.Put("/{name}", appPut)
+		_app.Put("/{name}/batch", appPut)
+		_app.Delete("/{name}", appDelete)
+		_app.Delete("/{name}/batch", appPut)
 	})
-	app.Get("/testdb", testGetAll)
+
 	app.PartyFunc("/admin", func(adminRouter iris.Party) {
 		adminRouter.Get("/status", getAdminStatus)
 		adminRouter.Post("/setPassword", setAdminPassword)
-		adminRouter.Get("/app", authContinue, getApp)
+		adminRouter.Get("/app", getApp)
 		adminRouter.Post("/login", login)
 		adminRouter.Post("/logout", logout)
 		//beans
 		adminRouter.Post("/addBean", addBean)
+		adminRouter.Post("/setBean", setBean)
+	})
+
+	app.PartyFunc("/test", func(test iris.Party) {
+		test.Get("/db", testGetAll)
 	})
 
 	{

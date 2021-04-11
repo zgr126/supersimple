@@ -47,6 +47,7 @@ export default {
         }).catch()
         
       }
+      this.$emit('nowSelect', i.name)
       this.nowSelect = i.name
     }
   },

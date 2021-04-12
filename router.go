@@ -46,6 +46,8 @@ func setRouter(app *iris.Application) {
 		//beans
 		adminRouter.Post("/addBean", addBean)
 		adminRouter.Post("/setBean", setBean)
+		//setting
+		adminRouter.Post("/setting", appSetting)
 	})
 
 	app.PartyFunc("/test", func(test iris.Party) {

@@ -1,6 +1,7 @@
 <template>
     <div class="contentpage">
         <top @nowSelect="changePage"></top>
+        <!-- home -->
         <div class="content" v-if="activePage == 'home'">
             <div class="beans_box">
                 <el-divider content-position="center">
@@ -66,6 +67,7 @@
             </div>
             <div class="bottombox"></div>
         </div>
+        <!-- setting -->
         <div class="content" v-if="activePage == 'setting'">
             <div class="beans_box">
                 <el-divider content-position="center">Response Header</el-divider>
@@ -76,30 +78,30 @@
                             v-for="(header, index) in httpform.headers"
                             :key="index"
                         >
-                            <el-col :span="16">
-                                <div class="grid-content bg-purple">
-                                    <el-form-item
-                                    :prop="'headers.' + index + '.k'"
-                                    :rules="{
-                                        required: true, message: 'required Filed', trigger: 'blur'
-                                    }">
-                                        <el-input v-model="header.k" placeholder="response key"></el-input>
-                                    </el-form-item>
-                                </div>
-                            </el-col>
                             <el-col :span="8">
                                 <div class="grid-content bg-purple">
                                     <el-form-item
-                                    :prop="'headers.' + index + '.v'"
+                                    :prop="'headers.' + index + '.key'"
                                     :rules="{
                                         required: true, message: 'required Filed', trigger: 'blur'
                                     }">
-                                        <el-input v-model="header.v" placeholder="response value"></el-input>
+                                        <el-input v-model="header.key" placeholder="response key"></el-input>
+                                    </el-form-item>
+                                </div>
+                            </el-col>
+                            <el-col :span="16">
+                                <div class="grid-content bg-purple">
+                                    <el-form-item
+                                    :prop="'headers.' + index + '.value'"
+                                    :rules="{
+                                        required: true, message: 'required Filed', trigger: 'blur'
+                                    }">
+                                        <el-input v-model="header.value" placeholder="response value"></el-input>
                                     </el-form-item>
                                 </div>
                             </el-col>
                         </el-row>
-                        <el-button type="primary" @click="onSubmit">查询</el-button>
+                        <el-button class="save_setting_btn" size="mini" @click="saveSetting">Save</el-button>
                     </el-form>
                 </div>
             </div>
@@ -151,7 +153,7 @@ export default {
             },
             httpform:{
                 headers: [
-                    {k: '',v:''}
+                    {key: '',value:''}
                 ]
             },
             rules: {
@@ -166,6 +168,15 @@ export default {
         }
     },
     methods:{
+        saveSetting(){
+            let headerList = []
+            this.httpform.headers.map(e=>{
+                headerList.push(e)
+            })
+            this.axios.post('setting', this.httpform).then(e=>{
+                console.log(e)
+            })
+        },
         submitForm(formName){
             this.$refs[formName].validate((valid) => {
                 if (valid) {
@@ -323,6 +334,19 @@ export default {
 }
 /deep/ .el-divider__text
     font-size 20px
+
+// setting
+.httpheader
+    padding 0 10px
+/deep/ .el-form--inline .el-form-item
+    width 100%
+    .el-form-item__content
+        width 100%
+.save_setting_btn
+    width: 200px;
+    border: solid 1px;
+
+
 .common-dialog
     /deep/ .el-dialog
         width 95%

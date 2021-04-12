@@ -7,21 +7,32 @@ import (
 )
 
 var (
-	app_system []byte = []byte("__system")
-	app_beans  []byte = []byte("__beans")
+	app_system  []byte = []byte("__system")
+	app_beans   []byte = []byte("__beans")
+	app_setting []byte = []byte("setting")
 )
 
 type appStruct struct {
-	Beans      beans             `json:"beans"`
-	HttpHeader map[string]string `json:"httpHeader"`
+	Beans   beans   `json:"beans"`
+	Setting setting `json:"setting"`
 }
 
-type resultValue map[uint64][]byte
-type resultValues []resultValue
+type beanResult map[uint64][]byte
+type beanResults []beanResult
+
+type setting struct {
+	Headers []*settingHttpHeader `json:"headers"`
+}
+
+type settingHttpHeader struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
 
 func newApp() {
 	app = &appStruct{}
 	app.getBeans()
+	app.getSetting()
 }
 
 func (app *appStruct) getBeans() {
@@ -39,8 +50,34 @@ func (app *appStruct) getBeans() {
 	tx.Commit()
 }
 
+func (app *appStruct) getSetting() {
+	tx, _ := db.Begin(true)
+	b, _ := tx.CreateBucketIfNotExists(app_system)
+
+	v := b.Get(app_setting)
+	_setting := &setting{}
+	_ = json.Unmarshal(v, _setting)
+	app.Setting = *_setting
+	tx.Commit()
+}
+
+func appSetting(ctx iris.Context) {
+	newSetting := &setting{}
+	ctx.ReadJSON(newSetting)
+
+	tx, _ := db.Begin(true)
+	b, _ := tx.CreateBucketIfNotExists(app_system)
+
+	settingByte, _ := json.Marshal(newSetting)
+	_ = b.Put(app_setting, settingByte)
+	app.Setting = *newSetting
+	tx.Commit()
+	commonResult(ctx, nil)
+}
+
 func getApp(ctx iris.Context) {
 	app.getBeans()
+	app.getSetting()
 	commonResult(ctx, app)
 }
 
@@ -57,10 +94,10 @@ func appGet(ctx iris.Context) {
 	name := ctx.Params().GetString("name")
 	tx, _ := db.Begin(true)
 	b := tx.Bucket([]byte(name))
-	list := resultValues{}
+	list := beanResults{}
 	if b != nil {
 		b.ForEach(func(k, v []byte) error {
-			item := make(resultValue)
+			item := make(beanResult)
 			item[btoui64(k)] = v
 			list = append(list, item)
 			return nil

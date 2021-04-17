@@ -10,23 +10,12 @@
                     <el-button class="document_filter" :class="{active: activeDocument =='disable'}" icon="el-icon-delete" size="mini" circle @click="activeDocument = 'disable'"></el-button>
                 </el-divider>
                 <div class="beans">
-                    <el-card class="bean" shadow="hover" v-for="(i, index) of beans" :key="index">
+                    <el-card class="bean" shadow="hover" v-for="(i, index) of beans" :key="index" @click.native="beanDetailsDialog = true;activeBean = i">
                         <p class="name">{{i.name}}</p>
                         <p class="kv">{{i.kvSize}}</p>
                         <p class="byte">{{i.byteSize | byteFilter}}</p>
-                        <p class="time">{{i.time}}</p>
+                        <!-- <p class="time">{{i.time}}</p> -->
                         <p class="des">{{i.des}}</p>
-                        <el-popover
-                        popper-class="s_popover"
-                        placement="left"
-                        width="160">
-                            <div style="text-align: right; margin: 0">
-                                <el-button size="mini" v-if="activeDocument == 'alive'" type="primary" round @click="testDoc(i)">Test</el-button>
-                                <el-button size="mini" v-if="activeDocument == 'disable'" type="primary" round @click="settingDoc(i, {status:1})">Recover</el-button>
-                                <el-button size="mini"  type="danger" round @click="settingDoc(i, {status:2})">Delete</el-button>
-                            </div>
-                            <el-button slot="reference" class="setting" icon="el-icon-setting" size="mini" circle ></el-button>
-                        </el-popover>
                         
                     </el-card>
                     <el-card class="bean box-card-add" shadow="hover" @click.native="showDialogDocument = true; newDocumentForm.isFileServer = false">
@@ -70,40 +59,8 @@
         <!-- setting -->
         <div class="content" v-if="activePage == 'setting'">
             <div class="beans_box">
-                <el-divider content-position="center">Response Header</el-divider>
-                <div class="httpheader">
-                    <el-form :inline="true" :model="httpform" class="httpform">
-                        
-                        <el-row :gutter="20"
-                            v-for="(header, index) in httpform.headers"
-                            :key="index"
-                        >
-                            <el-col :span="8">
-                                <div class="grid-content bg-purple">
-                                    <el-form-item
-                                    :prop="'headers.' + index + '.key'"
-                                    :rules="{
-                                        required: true, message: 'required Filed', trigger: 'blur'
-                                    }">
-                                        <el-input v-model="header.key" placeholder="response key"></el-input>
-                                    </el-form-item>
-                                </div>
-                            </el-col>
-                            <el-col :span="16">
-                                <div class="grid-content bg-purple">
-                                    <el-form-item
-                                    :prop="'headers.' + index + '.value'"
-                                    :rules="{
-                                        required: true, message: 'required Filed', trigger: 'blur'
-                                    }">
-                                        <el-input v-model="header.value" placeholder="response value"></el-input>
-                                    </el-form-item>
-                                </div>
-                            </el-col>
-                        </el-row>
-                        <el-button class="save_setting_btn" size="mini" @click="saveSetting">Save</el-button>
-                    </el-form>
-                </div>
+                <el-divider content-position="center">Common Response Header</el-divider>
+                <rheaders></rheaders>
             </div>
         </div>
         <el-dialog
@@ -120,13 +77,19 @@
                 <ajax-button label="Commit" @click.native="submitForm('newDocumentForm')" ref="ajaxbtn"></ajax-button>
             </el-form>
         </el-dialog>
+        <!-- bean details -->
         <el-dialog
         title=""
-        :visible.sync="showDialogFileServer"
-        class="dialog">
-            <span>这是一段信息</span>
+        :visible.sync="beanDetailsDialog"
+        class="common-dialog">
+            <p class="name">{{activeBean.name}}</p>
+            <p class="kv">{{activeBean.kvSize}}</p>
+            <p class="byte">{{activeBean.byteSize | byteFilter}}</p>
+            <p class="time">{{activeBean.time}}</p>
+            <p class="des">{{activeBean.des}}</p>
+            <el-divider content-position="center">Set Response Header</el-divider>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button @click="beanDetailsDialog = false">取 消</el-button>
             </span>
         </el-dialog>
     </div>
@@ -134,6 +97,7 @@
 
 <script>
 import top from './top'
+import rheaders from '../components/setresponseheader'
 export default {
     data(){
         return{
@@ -143,6 +107,9 @@ export default {
             httpHeaders: [],
             showDialogDocument: false,
             showDialogFileServer: false,
+            beanDetailsDialog: false,
+            activeBean: {},
+            
             activePage: 'home',
             activeDocument: 'alive',
             activeFileserver: 'alive',
@@ -253,7 +220,7 @@ export default {
         
     },
     components:{
-        top
+        top,rheaders
         // bk
     }
 }
@@ -275,7 +242,7 @@ export default {
             display: flex;
             flex-flow: wrap;
             /deep/ .el-card
-                
+                cursor pointer
                 min-width: 250px;
                 min-height: 150px;
                 margin: 10px;
@@ -335,22 +302,14 @@ export default {
 /deep/ .el-divider__text
     font-size 20px
 
-// setting
-.httpheader
-    padding 0 10px
-/deep/ .el-form--inline .el-form-item
-    width 100%
-    .el-form-item__content
-        width 100%
-.save_setting_btn
-    width: 200px;
-    border: solid 1px;
+
 
 
 .common-dialog
     /deep/ .el-dialog
-        width 95%
-        max-width 400px
+        width 80%
+        min-width: 400px;
+        max-width: 800px;
         /deep/ .el-dialog__body
             padding-top 0
 </style>

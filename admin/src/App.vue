@@ -135,4 +135,9 @@ body
   span
     display: block;
     padding: 5px;
+
+
+// reset element style
+.v-modal
+  opacity .05!important
 </style>

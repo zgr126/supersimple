@@ -1,6 +1,6 @@
-import index from './components/index'
-import init from './components/init'
-import login from './components/login'
+import index from './pages/index'
+import init from './pages/init'
+import login from './pages/login'
 let router = [
     
     { path: '/index', component: index },

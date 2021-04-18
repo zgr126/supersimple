@@ -2,17 +2,33 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/middleware/basicauth"
 )
 
 type ResponseBean struct {
 	Code int         `json:"code"`
 	Msg  string      `json:"msg"`
 	Data interface{} `json:"data"`
+}
+
+var dirOptions = iris.DirOptions{
+	IndexName: "index.html",
+	// The `Compress` field is ignored
+	// when the file is cached (when Cache.Enable is true),
+	// because the cache file has a map of pre-compressed contents for each encoding
+	// that is served based on client's accept-encoding.
+	Compress: true, // true or false does not matter here.
+	Cache: iris.DirCacheOptions{
+		Enable:         true,
+		CompressIgnore: iris.MatchImagesAssets,
+		// Here, define the encodings that the cached files should be pre-compressed
+		// and served based on client's needs.
+		Encodings:       []string{"gzip", "deflate", "br", "snappy"},
+		CompressMinSize: 50, // files smaller than this size will NOT be compressed.
+		Verbose:         1,
+	},
 }
 
 func setRouter(app *iris.Application) {
@@ -36,8 +52,9 @@ func setRouter(app *iris.Application) {
 		_app.Delete("/{name}", appDelete)
 		_app.Delete("/{name}/batch", appPut)
 	})
+	app.HandleDir("/admin", AssetFile(), dirOptions)
+	app.PartyFunc("/adminRest", func(adminRouter iris.Party) {
 
-	app.PartyFunc("/admin", func(adminRouter iris.Party) {
 		adminRouter.Get("/status", getAdminStatus)
 		adminRouter.Post("/setPassword", setAdminPassword)
 		adminRouter.Get("/app", getApp)
@@ -54,51 +71,52 @@ func setRouter(app *iris.Application) {
 		test.Get("/db", testGetAll)
 	})
 
-	{
-		view := iris.HTML("./views", ".html")
-		view.AddFunc("formatBytes", func(b int64) string {
-			const unit = 1000
-			if b < unit {
-				return fmt.Sprintf("%d B", b)
-			}
-			div, exp := int64(unit), 0
-			for n := b / unit; n >= unit; n /= unit {
-				div *= unit
-				exp++
-			}
-			return fmt.Sprintf("%.1f %cB",
-				float64(b)/float64(div), "kMGTPE"[exp])
-		})
-		app.RegisterView(view)
-		filesRouter := app.Party("/files")
-		filesRouter.HandleDir("/", iris.Dir(config.UploadDir), iris.DirOptions{
-			Compress: true,
-			ShowList: true,
+	// {
+	// 	view := iris.HTML("./views", ".html")
+	// 	view.AddFunc("formatBytes", func(b int64) string {
+	// 		const unit = 1000
+	// 		if b < unit {
+	// 			return fmt.Sprintf("%d B", b)
+	// 		}
+	// 		div, exp := int64(unit), 0
+	// 		for n := b / unit; n >= unit; n /= unit {
+	// 			div *= unit
+	// 			exp++
+	// 		}
+	// 		return fmt.Sprintf("%.1f %cB",
+	// 			float64(b)/float64(div), "kMGTPE"[exp])
+	// 	})
+	// 	app.RegisterView(view)
+	// 	filesRouter := app.Party("/files")
+	// 	filesRouter.HandleDir("/", iris.Dir(config.UploadDir), iris.DirOptions{
+	// 		Compress: true,
+	// 		ShowList: true,
 
-			// Optionally, force-send files to the client inside of showing to the browser.
-			Attachments: iris.Attachments{
-				Enable: true,
-				// Optionally, control data sent per second:
-				Limit: 50.0 * iris.MB,
-				Burst: 100 * iris.MB,
-				// Change the destination name through:
-				// NameFunc: func(systemName string) string {...}
-			},
+	// 		// Optionally, force-send files to the client inside of showing to the browser.
+	// 		Attachments: iris.Attachments{
+	// 			Enable: true,
+	// 			// Optionally, control data sent per second:
+	// 			Limit: 50.0 * iris.MB,
+	// 			Burst: 100 * iris.MB,
+	// 			// Change the destination name through:
+	// 			// NameFunc: func(systemName string) string {...}
+	// 		},
 
-			DirList: iris.DirListRich(iris.DirListRichOptions{
-				// Optionally, use a custom template for listing:
-				// Tmpl: dirListRichTemplate,
-				TmplName: "dirlist.html",
-			}),
-		})
+	// 		DirList: iris.DirListRich(iris.DirListRichOptions{
+	// 			// Optionally, use a custom template for listing:
+	// 			// Tmpl: dirListRichTemplate,
+	// 			TmplName: "dirlist.html",
+	// 		}),
+	// 	})
 
-		auth := basicauth.Default(map[string]string{
-			"myusername": "mypassword",
-		})
+	// 	auth := basicauth.Default(map[string]string{
+	// 		"myusername": "mypassword",
+	// 	})
 
-		filesRouter.Delete("/{file:path}", auth, deleteFile)
-	}
+	// 	filesRouter.Delete("/{file:path}", auth, deleteFile)
+	// }
 }
+
 func index(ctx iris.Context) {
 	// ctx.Redirect("/upload")
 }
@@ -132,7 +150,7 @@ func setCors(ctx iris.Context) {
 }
 
 func xcors(ctx iris.Context) {
-	ctx.ContentType("application/json")
+
 	setCors(ctx)
 	ctx.Next()
 }
@@ -160,6 +178,7 @@ func routeDone(ctx iris.Context) {
 
 // common result
 func commonResult(ctx iris.Context, data interface{}) {
+	ctx.ContentType("application/json")
 	var _json = &ResponseBean{
 		Code: 100,
 		Data: data,
@@ -176,6 +195,7 @@ func commonResult(ctx iris.Context, data interface{}) {
 
 // error result
 func errorHandleJSON(ctx iris.Context, err error, code errorCode) {
+	ctx.ContentType("application/json")
 	var _json = &ResponseBean{
 		Code: int(code),
 		Msg:  err.Error(),

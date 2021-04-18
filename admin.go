@@ -48,10 +48,6 @@ func (ad *adminStruct) loadAdminDetail() {
 		admin.CreateTime = string(t)
 	}
 }
-func (ad *adminStruct) setPassword(s string) {
-	// sum := sha256.Sum256([]byte(s))
-	// tx, err := ad.db.Begin(true)
-}
 
 func (ad *adminStruct) getConfig() *adminStruct {
 	// ad.password = ""
@@ -126,4 +122,8 @@ func logout(ctx iris.Context) {
 	sess.Start(ctx).Clear()
 	sess.Destroy(ctx)
 	commonResult(ctx, nil)
+}
+
+func adminPage(ctx iris.Context) {
+
 }

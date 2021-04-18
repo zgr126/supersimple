@@ -51,6 +51,15 @@ func (b beans) hasBean(s string) bool {
 	return false
 }
 
+func (b beans) getBean(s string) *bean {
+	for _, v := range b {
+		if v.Name == s {
+			return v
+		}
+	}
+	return nil
+}
+
 func addBean(ctx iris.Context) {
 	newBean := &bean{}
 	ctx.ReadJSON(newBean)

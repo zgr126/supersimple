@@ -8,6 +8,8 @@ require (
 	github.com/boltdb/bolt v1.3.1 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.2 // indirect
 	github.com/dgraph-io/badger/v3 v3.2011.1 // indirect
+	github.com/go-basic/uuid v1.0.0 // indirect
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/iris-contrib/middleware/cors v0.0.0-20210110101738-6d0a4d799b5d // indirect
 	github.com/iris-contrib/middleware/jwt v0.0.0-20210110101738-6d0a4d799b5d // indirect
 	github.com/julienschmidt/httprouter v1.3.0

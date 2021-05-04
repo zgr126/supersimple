@@ -4,7 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"io/fs"
 	"log"
+	"net/http"
+	"os"
 )
 
 //
@@ -25,4 +28,20 @@ func itob(v int) []byte {
 func btoui64(b []byte) uint64 {
 	log.Print(b)
 	return binary.BigEndian.Uint64(b)
+}
+
+// GetFileSystem ..
+func GetFileSystem(useOS bool, dir string, fsys fs.FS) http.FileSystem {
+	if useOS {
+		log.Print("using live mode")
+		return http.FS(os.DirFS(dir))
+	}
+
+	log.Print("using embed mode")
+	fsys, err := fs.Sub(fsys, dir)
+	if err != nil {
+		panic(err)
+	}
+
+	return http.FS(fsys)
 }

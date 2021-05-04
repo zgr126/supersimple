@@ -52,7 +52,7 @@ func setRouter(app *iris.Application) {
 		_app.Delete("/{name}", appDelete)
 		_app.Delete("/{name}/batch", appPut)
 	})
-	app.HandleDir("/admin", AssetFile(), dirOptions)
+	app.HandleDir("/admin", GetFileSystem(false, "admin/dist", staticFiles), dirOptions)
 	app.PartyFunc("/adminRest", func(adminRouter iris.Party) {
 
 		adminRouter.Get("/status", getAdminStatus)
